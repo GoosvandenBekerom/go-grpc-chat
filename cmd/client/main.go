@@ -16,14 +16,30 @@ func main() {
 		log.Fatalf("Unable to connect to grpc server: %v", err)
 	}
 	defer conn.Close()
-	client := chat.NewChatClient(conn)
-	msg, err := client.Send(context.Background(), &chat.Message{
+	c := chat.NewChatClient(conn)
+
+	for true {
+		print("Send message ('q' to quit): ")
+		var input string
+		_, err = fmt.Scanln(&input)
+		check(err)
+		if input == "q" {
+			break
+		}
+		sendMessage(c, input)
+	}
+}
+
+func sendMessage(c chat.ChatClient, content string) {
+	_, err := c.Send(context.Background(), &chat.Message{
 		Timestamp: time.Now().Unix(),
-		Content:   "Hello, this message is sent from a client!",
+		Content:   content,
 	})
+	check(err)
+}
+
+func check(err error) {
 	if err != nil {
-		log.Printf("Unable to send message: %v", err)
-	} else {
-		log.Printf("Message sent: %s", msg.Content)
+		panic(err)
 	}
 }
