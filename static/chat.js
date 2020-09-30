@@ -18,6 +18,7 @@ function setupWebSocketConnection() {
     var msg = e.data;
     messages.push(msg);
     console.log("Received WebSocket message: " + msg);
+    renderMessages()
  };
 
   socket.onclose = function() {
@@ -73,4 +74,5 @@ function addAdminMessage(content) {
     user: "Admin",
     content: content
   });
+  renderMessages()
 }
