@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans&display=swap" rel="stylesheet">
+  <title>Chat</title>
+</head>
+<body>
+  <main>
+    <div id="chat">
+      
+    </div>
+    <div id="new-message">
+      <textarea id="new-message-content"></textarea>
+      <button onclick="sendMessage()">></button>
+    </div>
+  </main>
+  <script src="chat.js"></script>
+  <script>
+    (function() {
+      document.getElementById("new-message-content")
+        .addEventListener("keydown", function(e) {
+          if(e.key == "Enter") {
+            e.preventDefault();
+            sendMessage()
+          }
+        })
+      setupWebSocketConnection();
+      renderMessages()
+    })();
+  </script>
+</body>
+</html>
