@@ -19,7 +19,7 @@ To generate the protobuf code run from the project root
 For now all configuration is hardcoded in `config/constants.go`
 
 ### Running the applications
-To start the webserver with websocket support (no gRPC yet): `$ go build cmd/chat/main.go` 
+To start the webserver with websocket support (no gRPC yet): `$ go build cmd/chat/main.go`  
 To start the server: `$ go build cmd/server/main.go`  
-To start a client: `$ go build cmd/client/main.go`
+To start a client: `$ go build cmd/client/main.go`  
 To start the "client disconnects" simulation: `$ go build cmd/simulate_disconnected_client/main.go`
