@@ -17,7 +17,7 @@ func (s Server) Send(_ context.Context, msg *Message) (*Message, error) {
 }
 
 func printMessage(m *Message) {
-	println(fmt.Sprintf("%s: %s", time.Unix(m.Timestamp, 0).Format("Jan _2 15:04:05"), m.Content))
+	println(fmt.Sprintf("[%s] %s: %s", time.Unix(m.Timestamp, 0).Format("Jan _2 15:04:05"), m.Username, m.Content))
 }
 
 func NewServer() Server {
