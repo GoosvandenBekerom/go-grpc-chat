@@ -21,19 +21,19 @@ var upgrader = websocket.Upgrader{
 }
 
 type Client struct {
-	server *Server
-	conn   *websocket.Conn
-	send   chan []byte
+	room *Room
+	conn *websocket.Conn
+	send chan []byte
 }
 
-// readPump pumps messages from the websocket connection to the server.
+// readPump pumps messages from the websocket connection to the chatroom.
 //
 // The application runs readPump in a per-connection goroutine. The application
 // ensures that there is at most one reader on a connection by executing all
 // reads from this goroutine.
 func (c *Client) readPump() {
 	defer func() {
-		c.server.unregister <- c
+		c.room.unregister <- c
 		c.conn.Close()
 	}()
 	c.conn.SetReadLimit(maxMessageSize)
@@ -47,11 +47,11 @@ func (c *Client) readPump() {
 			}
 			break
 		}
-		c.server.broadcast <- bytes.TrimSpace(message)
+		c.room.broadcast <- bytes.TrimSpace(message)
 	}
 }
 
-// writePump pumps messages from the server to the websocket connection.
+// writePump pumps messages from the chatroom to the websocket connection.
 //
 // A goroutine running writePump is started for each connection. The
 // application ensures that there is at most one writer to a connection by
@@ -67,7 +67,7 @@ func (c *Client) writePump() {
 		case message, open := <-c.send:
 			c.conn.SetWriteDeadline(time.Now().Add(writeWait))
 			if !open {
-				// The server closed the channel.
+				// The room closed the channel.
 				c.conn.WriteMessage(websocket.CloseMessage, []byte{})
 				return
 			}
@@ -97,14 +97,14 @@ func (c *Client) writePump() {
 	}
 }
 
-func ServeWebSocket(server *Server, w http.ResponseWriter, r *http.Request) {
+func ServeWebSocket(server *Room, w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println(err)
 		return
 	}
-	client := &Client{server: server, conn: conn, send: make(chan []byte, 256)}
-	client.server.register <- client
+	client := &Client{room: server, conn: conn, send: make(chan []byte, 256)}
+	client.room.register <- client
 	log.Println("Registered client: ", client)
 
 	// Allow collection of memory referenced by the caller by doing all work in new goroutines.

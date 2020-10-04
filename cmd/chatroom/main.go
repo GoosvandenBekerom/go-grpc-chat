@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"github.com/GoosvandenBekerom/go-grpc-chat/chat"
 	"github.com/GoosvandenBekerom/go-grpc-chat/config"
+	"github.com/GoosvandenBekerom/go-grpc-chat/pb"
+	"google.golang.org/grpc"
 	"log"
 	"net/http"
 )
@@ -21,16 +23,21 @@ func serveFrontEnd(response http.ResponseWriter, request *http.Request) {
 }
 
 func main() {
-	// TODO: separate client and server to separate applications that communicate over gRPC
-	server := chat.NewServer()
-	go server.Run()
+	conn, err := grpc.Dial(fmt.Sprintf("%s:%d", config.GrpcServerHost, config.GrpcServerPort), grpc.WithInsecure())
+	if err != nil {
+		log.Fatalf("Unable to connect to grpc server: %v", err)
+	}
+	defer conn.Close()
+	c := pb.NewChatClient(conn)
+	room := chat.NewRoom(c)
+	go room.Run()
 	http.HandleFunc("/", serveFrontEnd)
 	http.HandleFunc("/chat", func(w http.ResponseWriter, r *http.Request) {
-		chat.ServeWebSocket(server, w, r)
+		chat.ServeWebSocket(room, w, r)
 	})
-	log.Println("Starting chat server on port ", config.ServerPort)
-	err := http.ListenAndServe(fmt.Sprintf(":%d", config.ServerPort), nil)
+	log.Println("Starting chatroom on port ", config.WebSocketServerPort)
+	err = http.ListenAndServe(fmt.Sprintf(":%d", config.WebSocketServerPort), nil)
 	if err != nil {
-		log.Fatal("Server failed to start: ", err)
+		log.Fatal("Room failed to start: ", err)
 	}
 }

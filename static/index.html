@@ -75,7 +75,7 @@
     </div>
   </main>
   <script>
-    const ws_url = "ws://localhost:9999/chat";
+    const ws_url = "ws://localhost:8080/chat";
     const messages = [];
 
     function setupWebSocketConnection() {
@@ -87,18 +87,18 @@
       let socket = new WebSocket(ws_url)
 
       socket.onopen = function() {
-        addAdminMessage("Succesfully opened WebSocket to " + ws_url)
+        addAdminMessage("Successfully opened WebSocket connection to " + ws_url)
         addAdminMessage("Happy chatting!")
       }
 
       socket.onmessage = function (e) {
-        const msg = e.data;
+        console.log("Received WebSocket message: " + e.data);
+        const msg = JSON.parse(e.data);
         messages.push({
-          time: new Date(),
-          user: "Goos",
-          content: msg
+          time: new Date(msg.timestamp * 1000),
+          user: msg.username,
+          content: msg.content
         })
-        console.log("Received WebSocket message: " + msg);
         renderMessages()
       };
 
@@ -140,9 +140,12 @@
       chat.scrollTop = chat.scrollHeight;
     }
 
-    function sendMessage(socket) {
+    function sendMessage(socket, username) {
       let input = document.getElementById("new-message-content")
-      socket.send(input.value)
+      socket.send(JSON.stringify({
+        username: username,
+        content: input.value
+      }))
       input.value = '';
     }
 
@@ -156,13 +159,14 @@
     }
 
     (function() {
+      let username = prompt("Welcome to this chat, please enter the username you wish to use.")
       const socket = setupWebSocketConnection();
       renderMessages();
       document.getElementById("new-message-content")
         .addEventListener("keydown", function(e) {
           if(e.key === "Enter") {
             e.preventDefault();
-            sendMessage(socket);
+            sendMessage(socket, username);
           }
         })
     })();

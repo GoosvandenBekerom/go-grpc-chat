@@ -1,11 +1,11 @@
 syntax = "proto3";
 
+service Chat {
+    rpc BroadcastMessage(stream Message) returns (stream Message) {}
+}
+
 message Message {
     int64 timestamp = 1;
     string username = 2;
     string content = 3;
-}
-
-service Chat {
-    rpc Send(Message) returns (Message) {}
 }
